@@ -1,0 +1,184 @@
+﻿@model List<Easy_Games_Software.Models.CartItem>
+@{
+    ViewData["Title"] = "Shopping Cart";
+    var discountRate = ViewData["DiscountRate"] as decimal? ?? 0;
+    var userTier = ViewData["UserTier"] as Easy_Games_Software.Models.UserTier?;
+    var userPoints = ViewData["UserPoints"] as int? ?? 0;
+    var pointsToNextTier = ViewData["PointsToNextTier"] as int? ?? 0;
+}
+
+<h1><i class="bi bi-cart3"></i> Shopping Cart</h1>
+
+@if (userTier == Easy_Games_Software.Models.UserTier.Gold)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-star-fill"></i> <strong>Gold Member Discount Applied:</strong> You save 10% on all purchases!
+    </div>
+}
+else if (pointsToNextTier > 0)
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> You need <strong>@pointsToNextTier more points</strong> to reach Gold tier and unlock 10% discount!
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary">
+        <h4>Your cart is empty</h4>
+        <p>Start shopping to add items to your cart!</p>
+        <a asp-controller="Store" asp-action="Index" class="btn btn-primary">
+            <i class="bi bi-shop"></i> Browse Store
+        </a>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.StockItem.Name</strong><br />
+                                        <small class="text-muted">@item.StockItem.Category</small>
+                                    </td>
+                                    <td>
+                                        $@item.StockItem.Price.ToString("F2")
+                                        @if (discountRate > 0)
+                                        {
+                                            <br />
+                                            <small class="text-success">-@((discountRate * 100).ToString("F0"))%</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="Update" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <div class="input-group input-group-sm" style="width: 120px;">
+                                                <input type="number" name="quantity" value="@item.Quantity"
+                                                       min="1" max="@item.StockItem.Quantity" class="form-control" />
+                                                <button type="submit" class="btn btn-outline-secondary">
+                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        @if (discountRate > 0)
+                                        {
+                                            <span class="text-decoration-line-through text-muted">$@item.Subtotal.ToString("F2")</span>
+                                
+                                            <br />
+                                            <strong>$@((item.Subtotal * (1 - discountRate)).ToString("F2"))</strong>
+                                        }
+                                        else
+                                        {
+                                            <strong>$@item.Subtotal.ToString("F2")</strong>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="Remove" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    @{
+                        decimal subtotal = Model.Sum(c => c.Subtotal);
+                        decimal discount = subtotal * discountRate;
+                        decimal total = subtotal - discount;
+                        int pointsToEarn = (int)(total / 10) * (userTier == Easy_Games_Software.Models.UserTier.Gold ? 2 : 1);
+                    }
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td class="text-end">$@subtotal.ToString("F2")</td>
+                        </tr>
+                        @if (discount > 0)
+                        {
+                            <tr class="text-success">
+                                <td>Gold Discount:</td>
+                                <td class="text-end">-$@discount.ToString("F2")</td>
+                            </tr>
+                        }
+                        <tr class="h5">
+                            <td>Total:</td>
+                            <td class="text-end">$@total.ToString("F2")</td>
+                        </tr>
+                        <tr class="text-info">
+                            <td>Points to Earn:</td>
+                            <td class="text-end">@pointsToEarn pts</td>
+                        </tr>
+                    </table>
+
+                    <div class="d-grid gap-2">
+                        <a asp-action="Checkout" class="btn btn-primary">
+                            <i class="bi bi-credit-card"></i> Proceed to Checkout
+                        </a>
+                        <a asp-controller="Store" asp-action="Index" class="btn btn-outline-secondary">
+                            Continue Shopping
+                        </a>
+                    </div>
+
+                    <hr />
+
+                    <form asp-action="Clear" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger w-100"
+                                onclick="return confirm('Are you sure you want to clear your cart?')">
+                            <i class="bi bi-trash"></i> Clear Cart
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6>Your Rewards Status</h6>
+                    <p class="mb-1">
+                        <strong>Current Tier:</strong>
+                        @if (userTier == Easy_Games_Software.Models.UserTier.Gold)
+                        {
+                            <span class="badge bg-warning text-dark">GOLD</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">SILVER</span>
+                        }
+                    </p>
+                    <p class="mb-0">
+                        <strong>Points:</strong> @userPoints
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

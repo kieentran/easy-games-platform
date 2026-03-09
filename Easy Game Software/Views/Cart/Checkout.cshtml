@@ -1,0 +1,146 @@
+﻿@model List<Easy_Games_Software.Models.CartItem>
+@{
+    ViewData["Title"] = "Checkout";
+    var subtotal = ViewData["Subtotal"] as decimal? ?? 0;
+    var discount = ViewData["Discount"] as decimal? ?? 0;
+    var total = ViewData["Total"] as decimal? ?? 0;
+    var pointsToEarn = ViewData["PointsToEarn"] as int? ?? 0;
+    var userTier = ViewData["UserTier"] as Easy_Games_Software.Models.UserTier?;
+}
+
+<h1><i class="bi bi-credit-card"></i> Checkout</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5>Order Items</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.StockItem.Name</strong><br />
+                                    <small class="text-muted">@item.StockItem.Category</small>
+                                </td>
+                                <td class="text-center">@item.Quantity</td>
+                                <td class="text-end">$@item.StockItem.Price.ToString("F2")</td>
+                                <td class="text-end">$@item.Subtotal.ToString("F2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Payment Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> This is a demo application. No real payment is processed.
+                </div>
+
+                <form asp-action="ConfirmPurchase" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" class="form-control" placeholder="1234 5678 9012 3456" disabled />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Expiry Date</label>
+                            <input type="text" class="form-control" placeholder="MM/YY" disabled />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">CVV</label>
+                            <input type="text" class="form-control" placeholder="123" disabled />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cardholder Name</label>
+                        <input type="text" class="form-control" placeholder="John Doe" disabled />
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="terms" required />
+                        <label class="form-check-label" for="terms">
+                            I agree to the terms and conditions
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        <i class="bi bi-check-circle"></i> Complete Purchase
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td class="text-end">$@subtotal.ToString("F2")</td>
+                    </tr>
+                    @if (discount > 0)
+                    {
+                        <tr class="text-success">
+                            <td>Gold Member Discount:</td>
+                            <td class="text-end">-$@discount.ToString("F2")</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td>Tax:</td>
+                        <td class="text-end">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td>Shipping:</td>
+                        <td class="text-end">FREE</td>
+                    </tr>
+                    <tr class="h5">
+                        <td><strong>Total:</strong></td>
+                        <td class="text-end"><strong>$@total.ToString("F2")</strong></td>
+                    </tr>
+                </table>
+
+                @if (userTier == Easy_Games_Software.Models.UserTier.Gold)
+                {
+                    <div class="alert alert-warning mb-2">
+                        <small><i class="bi bi-star-fill"></i> Gold member discount applied!</small>
+                    </div>
+                }
+
+                <div class="alert alert-info mb-0">
+                    <small><i class="bi bi-gift"></i> You will earn <strong>@pointsToEarn points</strong> for this purchase!</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-left"></i> Back to Cart
+            </a>
+        </div>
+    </div>
+</div>
