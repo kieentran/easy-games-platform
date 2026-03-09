@@ -1,0 +1,107 @@
+﻿@model List<Easy_Games_Software.Models.Shop>
+@{
+    ViewData["Title"] = "Manage Shops";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shop"></i> Manage Shops</h1>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Create New Shop
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No shops created yet.
+        <a asp-action="Create" class="alert-link">Create your first shop</a> to get started!
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var shop in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 @(!shop.IsActive ? "border-secondary" : "")">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-shop-window"></i> @shop.ShopName
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            <i class="bi bi-geo-alt"></i> <strong>Location:</strong><br />
+                            @shop.Location
+                        </p>
+                        <p class="card-text">
+                            <i class="bi bi-telephone"></i> <strong>Phone:</strong> @(shop.PhoneNumber ?? "N/A")
+                        </p>
+                        <p class="card-text">
+                            <i class="bi bi-person-badge"></i> <strong>Proprietor:</strong><br />
+                            @shop.ShopProprietor.Username (@shop.ShopProprietor.FullName)
+                        </p>
+                        <p class="card-text">
+                            <i class="bi bi-calendar"></i> <strong>Opened:</strong> @shop.DateOpened.ToString("MMM dd, yyyy")
+                        </p>
+                        <p class="card-text">
+                            <strong>Status:</strong>
+                            @if (shop.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Details" asp-route-id="@shop.Id" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> Details
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@shop.Id" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <form asp-action="Delete" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@shop.Id" />
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Are you sure you want to PERMANENTLY DELETE @shop.ShopName? This action cannot be undone!')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="mt-4">
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="bi bi-bar-chart"></i> Summary</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">@Model.Count</h3>
+                        <p>Total Shops</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-success">@Model.Count(s => s.IsActive)</h3>
+                        <p>Active</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-secondary">@Model.Count(s => !s.IsActive)</h3>
+                        <p>Inactive</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">@Model.Select(s => s.ShopProprietorId).Distinct().Count()</h3>
+                        <p>Proprietors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,100 @@
+﻿@model Easy_Games_Software.Models.Shop
+@{
+    ViewData["Title"] = "Create New Shop";
+}
+
+<h1><i class="bi bi-plus-circle"></i> Create New Shop</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <h5>Validation Errors:</h5>
+                            <ul>
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    <div class="mb-3">
+                        <label asp-for="ShopName" class="form-label"></label>
+                        <input asp-for="ShopName" class="form-control" placeholder="Enter shop name" />
+                        <span asp-validation-for="ShopName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Location" class="form-label"></label>
+                        <input asp-for="Location" class="form-control" placeholder="Enter shop address" />
+                        <span asp-validation-for="Location" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="Shop contact number" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ShopProprietorId" class="form-label">Shop Proprietor</label>
+                        <select asp-for="ShopProprietorId" class="form-select" asp-items="ViewBag.Proprietors">
+                            <option value="">-- Select Proprietor --</option>
+                        </select>
+                        <span asp-validation-for="ShopProprietorId" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            The selected user will be assigned as Shop Proprietor role.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label">Notes (Optional)</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Optional notes"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Create Shop
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> Instructions</h5>
+                <ul class="small">
+                    <li>Enter the shop name and physical location</li>
+                    <li>Assign a user to manage this shop</li>
+                    <li>The assigned user will become a Shop Proprietor</li>
+                    <li>
+                        Shop Proprietors can:
+                        <ul>
+                            <li>Transfer stock from main inventory</li>
+                            <li>Use the POS system to sell items</li>
+                            <li>View their shop's sales reports</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

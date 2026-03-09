@@ -1,0 +1,188 @@
+﻿@model Easy_Games_Software.Models.Shop
+@{
+    ViewData["Title"] = "Shop Details";
+    var stats = ViewData["Statistics"] as Dictionary<string, object>;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shop-window"></i> @Model.ShopName</h1>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Shop Information -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Shop Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">Shop Name:</dt>
+                    <dd class="col-sm-8">@Model.ShopName</dd>
+
+                    <dt class="col-sm-4">Location:</dt>
+                    <dd class="col-sm-8">@Model.Location</dd>
+
+                    <dt class="col-sm-4">Phone:</dt>
+                    <dd class="col-sm-8">@(Model.PhoneNumber ?? "N/A")</dd>
+
+                    <dt class="col-sm-4">Proprietor:</dt>
+                    <dd class="col-sm-8">
+                        @Model.ShopProprietor.Username<br />
+                        <small class="text-muted">@Model.ShopProprietor.FullName</small>
+                    </dd>
+
+                    <dt class="col-sm-4">Date Opened:</dt>
+                    <dd class="col-sm-8">@Model.DateOpened.ToString("MMMM dd, yyyy")</dd>
+
+                    <dt class="col-sm-4">Status:</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </dd>
+                </dl>
+
+                @if (!string.IsNullOrEmpty(Model.Notes))
+                {
+                    <hr />
+                    <dt>Notes:</dt>
+                    <dd>@Model.Notes</dd>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Statistics -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Statistics</h5>
+            </div>
+            <div class="card-body">
+                @if (stats != null)
+                {
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <h3 class="text-primary">@stats["TotalItems"]</h3>
+                            <p class="mb-0">Total Items</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success">$@(((decimal)stats["TotalValue"]).ToString("F2"))</h3>
+                            <p class="mb-0">Inventory Value</p>
+                        </div>
+                    </div>
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <h3 class="text-warning">@stats["LowStockItems"]</h3>
+                            <p class="mb-0">Low Stock Items</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-danger">@stats["OutOfStockItems"]</h3>
+                            <p class="mb-0">Out of Stock</p>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-info">@stats["TotalTransactions"]</h3>
+                            <p class="mb-0">Transactions</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success">$@(((decimal)stats["TotalSales"]).ToString("F2"))</h3>
+                            <p class="mb-0">Total Sales</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No statistics available yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory List -->
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-box-seam"></i> Current Inventory</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.ShopStocks.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ShopStocks.OrderBy(ss => ss.StockItem.Name))
+                        {
+                            <tr>
+                                <td>@item.StockItem.Name</td>
+                                <td><span class="badge bg-secondary">@item.StockItem.Category</span></td>
+                                <td>$@item.Price.ToString("F2")</td>
+                                <td>
+                                    @if (item.QuantityInShop == 0)
+                                    {
+                                        <span class="text-danger fw-bold">@item.QuantityInShop</span>
+                                    }
+                                    else if (item.IsLowStock())
+                                    {
+                                        <span class="text-warning fw-bold">@item.QuantityInShop</span>
+                                    }
+                                    else
+                                    {
+                                        <span>@item.QuantityInShop</span>
+                                    }
+                                </td>
+                                <td>$@item.TotalValue.ToString("F2")</td>
+                                <td>
+                                    @if (item.QuantityInShop == 0)
+                                    {
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                    }
+                                    else if (item.IsLowStock())
+                                    {
+                                        <span class="badge bg-warning text-dark">Low Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">In Stock</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No inventory items in this shop yet.
+            </div>
+        }
+    </div>
+</div>
