@@ -1,0 +1,141 @@
+﻿@model Easy_Games_Software.Models.StockItem
+@{
+    ViewData["Title"] = Model.Name;
+    var discountRate = ViewData["DiscountRate"] as decimal? ?? 0;
+    var discountedPrice = ViewData["DiscountedPrice"] as decimal? ?? Model.Price;
+    var userTier = ViewData["UserTier"] as Easy_Games_Software.Models.UserTier?;
+    var relatedItems = ViewData["RelatedItems"] as List<Easy_Games_Software.Models.StockItem> ?? new List<Easy_Games_Software.Models.StockItem>();
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center p-5 bg-light">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid" />
+                }
+                else
+                {
+                    <i class="bi bi-controller" style="font-size: 200px; color: #ccc;"></i>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h1>@Model.Name</h1>
+        @if (Model.IsFeatured)
+        {
+            <span class="badge bg-danger mb-2">FEATURED</span>
+        }
+        <p>
+            <span class="badge bg-secondary">@Model.Category</span>
+            @if (Model.Rating > 0)
+            {
+                <span class="ms-2">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Round(Model.Rating))
+                        {
+                            <i class="bi bi-star-fill text-warning"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star text-warning"></i>
+                        }
+                    }
+                    <small>(@Model.Rating.ToString("F1"))</small>
+                </span>
+            }
+        </p>
+
+        <p class="lead">@Model.Description</p>
+
+        <div class="mb-3">
+            @if (discountRate > 0)
+            {
+                <span class="text-decoration-line-through text-muted h4">$@Model.Price.ToString("F2")</span>
+                <span class="h2 text-danger ms-2">$@discountedPrice.ToString("F2")</span>
+                <span class="badge bg-warning text-dark ms-2">@((discountRate * 100).ToString("F0"))% OFF</span>
+            }
+            else
+            {
+                <span class="h2">$@Model.Price.ToString("F2")</span>
+            }
+        </div>
+
+        <div class="mb-3">
+            @if (Model.IsInStock())
+            {
+                <span class="badge bg-success fs-6">In Stock (@Model.Quantity available)</span>
+            }
+            else
+            {
+                <span class="badge bg-danger fs-6">Out of Stock</span>
+            }
+        </div>
+
+        @if (User.Identity != null && User.Identity.IsAuthenticated && Model.IsInStock())
+        {
+            <form asp-controller="Cart" asp-action="Add" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="itemId" value="@Model.Id" />
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="quantity" class="form-label">Quantity:</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity"
+                               value="1" min="1" max="@Math.Min(Model.Quantity, 10)" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+            </form>
+        }
+        else if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path"
+               class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Login to Purchase
+            </a>
+        }
+
+        <hr class="my-4" />
+
+        <dl class="row">
+            <dt class="col-sm-4">Units Sold:</dt>
+            <dd class="col-sm-8">@Model.UnitsSold</dd>
+
+            <dt class="col-sm-4">Date Added:</dt>
+            <dd class="col-sm-8">@Model.DateAdded.ToString("MMM dd, yyyy")</dd>
+
+            @if (Model.LastUpdated.HasValue)
+            {
+                <dt class="col-sm-4">Last Updated:</dt>
+                <dd class="col-sm-8">@Model.LastUpdated.Value.ToString("MMM dd, yyyy")</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+@if (relatedItems.Any())
+{
+    <hr class="my-5" />
+    <h3>Related Products</h3>
+    <div class="row">
+        @foreach (var item in relatedItems)
+        {
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">@item.Name</h6>
+                        <p class="card-text">$@item.Price.ToString("F2")</p>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
