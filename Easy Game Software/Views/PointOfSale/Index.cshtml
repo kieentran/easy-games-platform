@@ -1,0 +1,372 @@
+﻿@* Claude Prompt 012 start *@
+@{
+    ViewData["Title"] = "Point of Sale";
+}
+
+<style>
+    .pos-container {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .pos-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    .product-card {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .product-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .cart-item {
+        border-bottom: 1px solid #dee2e6;
+        padding: 10px 0;
+    }
+    .pos-total {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .customer-info {
+        background: #e3f2fd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="pos-container">
+    <!-- Header -->
+    <div class="pos-header">
+        <h1 class="mb-0"><i class="bi bi-cash-register"></i> Point of Sale</h1>
+        <p class="mb-0">@ViewData["ShopName"]</p>
+    </div>
+
+    <div class="row">
+        <!-- Left Side: Products -->
+        <div class="col-md-7">
+            <!-- Customer Search -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5><i class="bi bi-person-search"></i> Customer Lookup</h5>
+                    <div class="input-group">
+                        <input type="text" id="customerPhone" class="form-control" 
+                               placeholder="Enter customer phone number" />
+                        <button type="button" class="btn btn-primary" onclick="searchCustomer()">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                        <a asp-action="QuickSignup" class="btn btn-success">
+                            <i class="bi bi-person-plus"></i> New Customer
+                        </a>
+                    </div>
+                    <div id="customerInfo" class="customer-info mt-3" style="display: none;">
+                        <!-- Customer info will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Search -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5><i class="bi bi-search"></i> Product Search</h5>
+                    <input type="text" id="productSearch" class="form-control" 
+                           placeholder="Search products..." onkeyup="searchProducts()" />
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="productsGrid" class="row">
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Right Side: Cart -->
+        <div class="col-md-5">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-cart3"></i> Current Sale</h4>
+                </div>
+                <div class="card-body">
+                    <div id="cartItems" style="max-height: 400px; overflow-y: auto;">
+                        <p class="text-muted text-center">No items in cart</p>
+                    </div>
+
+                    <hr />
+
+                    <!-- Totals -->
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-success">
+                            <span>Discount:</span>
+                            <span id="discount">$0.00</span>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <span class="pos-total">TOTAL:</span>
+                            <span class="pos-total text-primary" id="total">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-success btn-lg" onclick="completeSale()">
+                            <i class="bi bi-check-circle"></i> Complete Sale
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="clearCart()">
+                            <i class="bi bi-x-circle"></i> Clear Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // AI Reference: Claude - POS JavaScript for cart management
+        let cart = [];
+        let currentCustomer = null;
+        let products = [];
+
+        $(document).ready(function() {
+            loadProducts();
+        });
+
+        function loadProducts(search = '') {
+            $.get('/PointOfSale/GetShopStock', { search: search }, function(response) {
+                if (response.success) {
+                    products = response.items;
+                    displayProducts();
+                }
+            });
+        }
+
+        function searchProducts() {
+            const search = $('#productSearch').val();
+            loadProducts(search);
+        }
+
+        function displayProducts() {
+            const grid = $('#productsGrid');
+            grid.empty();
+
+            if (products.length === 0) {
+                grid.append('<div class="col-12"><p class="text-muted text-center">No products found</p></div>');
+                return;
+            }
+
+            products.forEach(product => {
+                const lowStock = product.isLowStock ? '<span class="badge bg-warning text-dark">Low Stock</span>' : '';
+                const outOfStock = product.quantityInShop === 0 ? '<span class="badge bg-danger">Out of Stock</span>' : '';
+
+                const card = `
+                    <div class="col-md-6 mb-3">
+                        <div class="card product-card" onclick="addToCart(${product.id})">
+                            <div class="card-body">
+                                <h6 class="card-title">${product.name}</h6>
+                                <p class="card-text">
+                                    <strong>$${product.price.toFixed(2)}</strong><br />
+                                    <small class="text-muted">In Stock: ${product.quantityInShop}</small>
+                                    ${lowStock} ${outOfStock}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.append(card);
+            });
+        }
+
+        function searchCustomer() {
+            const phone = $('#customerPhone').val();
+            if (!phone) {
+                alert('Please enter a phone number');
+                return;
+            }
+
+            $.post('/PointOfSale/SearchCustomer', { phoneNumber: phone }, function(response) {
+                if (response.success) {
+                    currentCustomer = response.customer;
+                    displayCustomerInfo();
+                    updateTotals();
+                } else {
+                    alert(response.message);
+                    currentCustomer = null;
+                    $('#customerInfo').hide();
+                }
+            });
+        }
+
+        function displayCustomerInfo() {
+            const info = $('#customerInfo');
+            const tierBadge = currentCustomer.tier === 'Gold' ?
+                '<span class="badge bg-warning text-dark">GOLD</span>' :
+                '<span class="badge bg-secondary">SILVER</span>';
+
+            info.html(`
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${currentCustomer.fullName || currentCustomer.username}</strong> ${tierBadge}<br />
+                        <small>Points: ${currentCustomer.points} | Discount: ${(currentCustomer.discountRate * 100).toFixed(0)}%</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearCustomer()">Clear</button>
+                </div>
+            `);
+            info.show();
+        }
+
+        function clearCustomer() {
+            currentCustomer = null;
+            $('#customerPhone').val('');
+            $('#customerInfo').hide();
+            updateTotals();
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1
+                });
+            }
+
+            updateCart();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        function updateQuantity(productId, change) {
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+            } else {
+                updateCart();
+            }
+        }
+
+        function updateCart() {
+            const container = $('#cartItems');
+            container.empty();
+
+            if (cart.length === 0) {
+                container.append('<p class="text-muted text-center">No items in cart</p>');
+            } else {
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    container.append(`
+                        <div class="cart-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${item.name}</strong><br />
+                                    <small>$${item.price.toFixed(2)} each</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="btn-group btn-group-sm mb-1">
+                                        <button class="btn btn-outline-secondary" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                        <button class="btn btn-outline-secondary" disabled>${item.quantity}</button>
+                                        <button class="btn btn-outline-secondary" onclick="updateQuantity(${item.id}, 1)">+</button>
+                                    </div><br />
+                                    <strong>$${itemTotal.toFixed(2)}</strong>
+                                    <button class="btn btn-sm btn-danger ms-2" onclick="removeFromCart(${item.id})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+            updateTotals();
+        }
+
+        function updateTotals() {
+            let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let discountRate = currentCustomer ? currentCustomer.discountRate : 0;
+            let discount = subtotal * discountRate;
+            let total = subtotal - discount;
+
+            $('#subtotal').text('$' + subtotal.toFixed(2));
+            $('#discount').text('-$' + discount.toFixed(2));
+            $('#total').text('$' + total.toFixed(2));
+        }
+
+        function clearCart() {
+            if (cart.length === 0) return;
+            if (confirm('Clear all items from cart?')) {
+                cart = [];
+                updateCart();
+            }
+        }
+
+        function completeSale() {
+            if (cart.length === 0) {
+                alert('Cart is empty!');
+                return;
+            }
+
+            if (!confirm('Complete this sale?')) {
+                return;
+            }
+
+            const saleData = {
+                customerId: currentCustomer ? currentCustomer.id : null,
+                items: cart.map(item => ({
+                    stockItemId: item.id,
+                    quantity: item.quantity
+                }))
+            };
+
+            $.ajax({
+                url: '/PointOfSale/CompleteSale',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(saleData),
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(`Sale completed successfully!\n\nTotal: $${response.totalAmount.toFixed(2)}\nPoints Earned: ${response.pointsEarned}\nTransaction: ${response.transactionReference}`);
+
+                        cart = [];
+                        currentCustomer = null;
+                        $('#customerPhone').val('');
+                        $('#customerInfo').hide();
+                        updateCart();
+                        loadProducts();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Failed to complete sale. Please try again.');
+                }
+            });
+        }
+    </script>
+    @Html.AntiForgeryToken()
+}
+@* Claude Prompt 012 end *@
