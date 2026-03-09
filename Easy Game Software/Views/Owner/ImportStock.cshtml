@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Import Stock";
+}
+
+<h1><i class="bi bi-upload"></i> Import Stock from CSV</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="ImportStock" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label">Select CSV File</label>
+                        <input type="file" name="file" class="form-control" accept=".csv" required />
+                        <small class="form-text text-muted">
+                            CSV format: Name,Category,Price,Quantity,Description
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Import Stock
+                    </button>
+                    <a asp-action="Stock" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>CSV Format Example</h5>
+            </div>
+            <div class="card-body">
+                <pre>Name,Category,Price,Quantity,Description
+The Last of Us Part II,Game,59.99,25,Emotional action-adventure sequel
+Black Myth: Wukong,RPG,69.99,30,Epic Chinese mythology action RPG
+FIFA 25,Sports,69.99,50,Latest football simulation game</pre>
+            </div>
+        </div>
+    </div>
+</div>

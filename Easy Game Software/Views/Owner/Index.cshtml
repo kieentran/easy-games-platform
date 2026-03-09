@@ -1,0 +1,240 @@
+﻿@* Claude Prompt 006 start *@
+@model Easy_Games_Software.Controllers.OwnerDashboardViewModel
+@{
+    ViewData["Title"] = "Owner Dashboard";
+}
+
+<h1><i class="bi bi-speedometer2"></i> Owner Dashboard</h1>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Revenue</h6>
+                        <h3>$@Model.TotalRevenue.ToString("F2")</h3>
+                    </div>
+                    <i class="bi bi-cash-coin" style="font-size: 2rem;"></i>
+                </div>
+                @if (Model.GrowthPercentage != 0)
+                {
+                    <small>
+                        @if (Model.GrowthPercentage > 0)
+                        {
+                            <i class="bi bi-arrow-up"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-arrow-down"></i>
+                        }
+                        @Math.Abs(Model.GrowthPercentage).ToString("F1")% this month
+                    </small>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Users</h6>
+                        <h3>@Model.TotalUsers</h3>
+                        <small>@Model.TotalCustomers customers, @Model.TotalOwners owners</small>
+                    </div>
+                    <i class="bi bi-people" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Stock Items</h6>
+                        <h3>@Model.TotalStock</h3>
+                    </div>
+                    <i class="bi bi-box-seam" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-dark">Transactions</h6>
+                        <h3 class="text-dark">@Model.TotalTransactions</h3>
+                    </div>
+                    <i class="bi bi-receipt" style="font-size: 2rem;" class="text-dark"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-graph-up"></i> Sales Statistics</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    @foreach (var stat in Model.SalesStatistics)
+                    {
+                        <tr>
+                            <td>@stat.Key.Replace("_", " "):</td>
+                            <td class="text-end">
+                                @if (stat.Key.Contains("Revenue") || stat.Key.Contains("Discount") || stat.Key.Contains("Value"))
+                                {
+                                    <span>$@stat.Value.ToString("F2")</span>
+                                }
+                                else
+                                {
+                                    <span>@stat.Value.ToString("F0")</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-pie-chart"></i> Stock by Category</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    @foreach (var cat in Model.StockByCategory.OrderByDescending(x => x.Value))
+                    {
+                        <tr>
+                            <td>@cat.Key</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar"
+                                         style="width: @((cat.Value / (double)Model.TotalStock * 100).ToString("F0"))%">
+                                        @cat.Value
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-trophy"></i> Top Customers</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    @foreach (var customer in Model.TopCustomers)
+                    {
+                        <tr>
+                            <td>
+                                @customer.user.Username
+                                @if (customer.user.Tier == Easy_Games_Software.Models.UserTier.Gold)
+                                {
+                                    <span class="badge bg-warning text-dark">GOLD</span>
+                                }
+                            </td>
+                            <td class="text-end">$@customer.totalSpent.ToString("F2")</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-star"></i> Best Sellers</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    @foreach (var item in Model.BestSellers)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td class="text-end">@item.UnitsSold sold</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Recent Transactions</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    @foreach (var trans in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td>
+                                <small>
+                                    @trans.User.Username<br />
+                                    @trans.StockItem.Name
+                                </small>
+                            </td>
+                            <td class="text-end">
+                                <small>
+                                    $@trans.TotalAmount.ToString("F2")<br />
+                                    @trans.TransactionDate.ToString("MM/dd HH:mm")
+                                </small>
+                            </td>
+                        </tr>
+                    }
+                </table>
+                <a asp-action="Transactions" class="btn btn-sm btn-outline-primary w-100">View All</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5>Quick Actions</h5>
+                <div class="btn-group" role="group">
+                    <a asp-action="CreateStock" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add New Stock
+                    </a>
+                    <a asp-action="Users" class="btn btn-info">
+                        <i class="bi bi-people"></i> Manage Users
+                    </a>
+                    <a asp-action="Stock" class="btn btn-success">
+                        <i class="bi bi-box-seam"></i> Manage Stock
+                    </a>
+                    <a asp-action="Transactions" class="btn btn-warning">
+                        <i class="bi bi-receipt"></i> View Transactions
+                    </a>
+                    <a asp-action="Reports" class="btn btn-secondary">
+                        <i class="bi bi-file-earmark-text"></i> Generate Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@* Claude Prompt 006 end *@

@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+}
+
+<h1><i class="bi bi-file-earmark-text"></i> Generate Reports</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Sales Report</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="GenerateReport" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="reportType" value="sales" />
+                    <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" name="startDate" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" name="endDate" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Generate Sales Report
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Export Data</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="GenerateReport" method="post" class="mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="reportType" value="users" />
+                    <input type="hidden" name="startDate" value="@DateTime.Now.AddYears(-1).ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-people"></i> Export Users to CSV
+                    </button>
+                </form>
+
+                <form asp-action="GenerateReport" method="post" class="mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="reportType" value="stock" />
+                    <input type="hidden" name="startDate" value="@DateTime.Now.AddYears(-1).ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    <button type="submit" class="btn btn-info w-100">
+                        <i class="bi bi-box-seam"></i> Export Stock to CSV
+                    </button>
+                </form>
+
+                <form asp-action="GenerateReport" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="reportType" value="transactions" />
+                    <input type="hidden" name="startDate" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="bi bi-receipt"></i> Export Transactions to CSV
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Import Stock</h5>
+            </div>
+            <div class="card-body">
+                <a asp-action="ImportStock" class="btn btn-primary">
+                    <i class="bi bi-upload"></i> Go to Import Page
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

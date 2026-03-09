@@ -1,0 +1,151 @@
+﻿@* Claude Prompt 010 start *@
+@model SendEmailViewModel
+@{
+    ViewData["Title"] = "Send Email to Customers";
+}
+
+<h1><i class="bi bi-envelope"></i> Send Email to Customers</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-send"></i> Compose Email</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="SendEmailToTier" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="tier" class="form-label">Send To:</label>
+                        <select name="tier" id="tier" class="form-select" required>
+                            <option value="All">All Customers (@Model.TotalCustomers total)</option>
+                            <option value="Bronze">🥉 Bronze Tier Only (@Model.BronzeCustomers customers)</option>
+                            <option value="Silver">🥈 Silver Tier Only (@Model.SilverCustomers customers)</option>
+                            <option value="Gold">🥇 Gold Tier Only (@Model.GoldCustomers customers)</option>
+                            <option value="Platinum">💎 Platinum Tier Only (@Model.PlatinumCustomers customers)</option>
+                        </select>
+                        <small class="form-text text-muted">
+                            Select which group of customers should receive this email
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Email Subject:</label>
+                        <input type="text"
+                               name="subject"
+                               id="subject"
+                               class="form-control"
+                               placeholder="e.g., Special Holiday Sale - 20% Off!"
+                               required
+                               maxlength="200" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Email Message:</label>
+                        <textarea name="message"
+                                  id="message"
+                                  class="form-control"
+                                  rows="10"
+                                  placeholder="Write your promotional message here..."
+                                  required></textarea>
+                        <small class="form-text text-muted">
+                            This message will be sent to all selected customers
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-send"></i> Send Email
+                        </button>
+                        <a asp-action="Users" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Users
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Email Tips</h6>
+            </div>
+            <div class="card-body">
+                <h6>Best Practices:</h6>
+                <ul class="small">
+                    <li>Keep subject lines clear and concise</li>
+                    <li>Personalize your message when possible</li>
+                    <li>Include specific details about promotions</li>
+                    <li>Add a clear call-to-action</li>
+                    <li>Proofread before sending</li>
+                </ul>
+
+                <hr />
+
+                <h6>Customer Statistics:</h6>
+                <ul class="list-unstyled small">
+                    <li><strong>Total Customers:</strong> @Model.TotalCustomers</li>
+                    <li><strong>🥉 Bronze Tier:</strong> @Model.BronzeCustomers</li>
+                    <li><strong>🥈 Silver Tier:</strong> @Model.SilverCustomers</li>
+                    <li><strong>🥇 Gold Tier:</strong> @Model.GoldCustomers</li>
+                    <li><strong>💎 Platinum Tier:</strong> @Model.PlatinumCustomers</li>
+                </ul>
+
+                <div class="alert alert-warning small mt-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Note:</strong> Only customers with valid email addresses will receive the message.
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Example Messages</h6>
+            </div>
+            <div class="card-body small">
+                <p><strong>Holiday Sale (All Tiers):</strong></p>
+                <p class="text-muted">
+                    "🎉 Holiday Special! Get 20% off all games this weekend. Use code HOLIDAY20 at checkout. Offer ends Sunday!"
+                </p>
+
+                <p><strong>New Arrivals (All Tiers):</strong></p>
+                <p class="text-muted">
+                    "🎮 Just arrived! Check out our latest collection of games and accessories. Shop now before they're gone!"
+                </p>
+
+                <p><strong>Gold Member Exclusive:</strong></p>
+                <p class="text-muted">
+                    "🥇 As a valued Gold member, enjoy an exclusive 25% discount on all items this week. Thank you for your loyalty!"
+                </p>
+
+                <p><strong>Platinum VIP Exclusive:</strong></p>
+                <p class="text-muted">
+                    "💎 Platinum VIP Alert! Get early access to our new release + 30% off. You're our most valued customer!"
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Character counter for message
+        document.getElementById('message').addEventListener('input', function() {
+            const charCount = this.value.length;
+            console.log('Characters: ' + charCount);
+        });
+
+        // Confirm before sending
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const tier = document.getElementById('tier').value;
+            const subject = document.getElementById('subject').value;
+
+            if (!confirm(`Are you sure you want to send "${subject}" to ${tier} tier customers?`)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}
+@* Claude Prompt 010 end *@

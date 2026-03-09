@@ -1,0 +1,92 @@
+﻿@model Easy_Games_Software.Models.User
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<h1><i class="bi bi-person-circle"></i> User Details</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5>User Information</h5>
+                <dl class="row">
+                    <dt class="col-sm-3">Username:</dt>
+                    <dd class="col-sm-9">@Model.Username</dd>
+
+                    <dt class="col-sm-3">Email:</dt>
+                    <dd class="col-sm-9">@(Model.Email ?? "Not provided")</dd>
+
+                    <dt class="col-sm-3">Full Name:</dt>
+                    <dd class="col-sm-9">@(Model.FullName ?? "Not provided")</dd>
+
+                    <dt class="col-sm-3">Role:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge @(Model.Role == Easy_Games_Software.Models.UserRole.Owner ? "bg-danger" : "bg-primary")">
+                            @Model.Role
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">Tier:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge @(Model.Tier == Easy_Games_Software.Models.UserTier.Gold ? "bg-warning text-dark" : "bg-secondary")">
+                            @Model.Tier
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">Points:</dt>
+                    <dd class="col-sm-9">@Model.Points</dd>
+
+                    <dt class="col-sm-3">Total Spent:</dt>
+                    <dd class="col-sm-9">$@Model.TotalSpent.ToString("F2")</dd>
+
+                    <dt class="col-sm-3">Registration Date:</dt>
+                    <dd class="col-sm-9">@Model.RegistrationDate.ToString("MMM dd, yyyy")</dd>
+
+                    <dt class="col-sm-3">Last Login:</dt>
+                    <dd class="col-sm-9">@(Model.LastLoginDate?.ToString("MMM dd, yyyy HH:mm") ?? "Never")</dd>
+                </dl>
+
+                <a asp-action="Users" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Users
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Transactions</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Transactions.Any())
+                {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var trans in Model.Transactions.OrderByDescending(t => t.TransactionDate).Take(5))
+                            {
+                                <tr>
+                                    <td>@trans.TransactionDate.ToString("MM/dd")</td>
+                                    <td>@trans.StockItem?.Name</td>
+                                    <td>$@trans.TotalAmount.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">No transactions yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

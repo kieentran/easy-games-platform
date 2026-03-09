@@ -1,0 +1,65 @@
+﻿@model List<Easy_Games_Software.Models.Transaction>
+@{
+    ViewData["Title"] = "Transactions";
+}
+
+<h1><i class="bi bi-receipt"></i> Transactions</h1>
+
+<div class="row mb-3">
+    <div class="col-md-8">
+        <form method="get" class="d-flex">
+            <input type="date" name="startDate" class="form-control me-2" value="@ViewData["StartDate"]" />
+            <input type="date" name="endDate" class="form-control me-2" value="@ViewData["EndDate"]" />
+            <button type="submit" class="btn btn-primary">Filter</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <small>Total Revenue: <strong>$@ViewData["TotalRevenue"]</strong></small><br />
+                <small>Total Discounts: <strong>$@ViewData["TotalDiscounts"]</strong></small><br />
+                <small>Total Points: <strong>@ViewData["TotalPoints"]</strong></small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Discount</th>
+                    <th>Total</th>
+                    <th>Points</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var trans in Model)
+                {
+                    <tr>
+                        <td>@trans.TransactionReference</td>
+                        <td>@trans.TransactionDate.ToString("MM/dd/yyyy HH:mm")</td>
+                        <td>@trans.User.Username</td>
+                        <td>@trans.StockItem.Name</td>
+                        <td>@trans.Quantity</td>
+                        <td>$@trans.UnitPrice.ToString("F2")</td>
+                        <td>$@trans.DiscountAmount.ToString("F2")</td>
+                        <td>$@trans.TotalAmount.ToString("F2")</td>
+                        <td>@trans.PointsEarned</td>
+                        <td>
+                            <span class="badge bg-success">@trans.Status</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
