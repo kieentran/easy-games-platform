@@ -1,0 +1,130 @@
+﻿@model Easy_Games_Software.Models.User
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h1><i class="bi bi-person-circle"></i> My Profile</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-person-circle" style="font-size: 100px;"></i>
+                <h4 class="mt-3">@Model.Username</h4>
+                @if (Model.Role == Easy_Games_Software.Models.UserRole.Owner)
+                {
+                    <span class="badge bg-danger">OWNER</span>
+                }
+                else
+                {
+                    @if (Model.Tier == Easy_Games_Software.Models.UserTier.Gold)
+                    {
+                        <span class="badge bg-warning text-dark">GOLD MEMBER</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">SILVER MEMBER</span>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5>Rewards Status</h5>
+                <p><strong>Points:</strong> <span class="badge bg-primary">@Model.Points</span></p>
+                <p><strong>Total Spent:</strong> $@Model.TotalSpent.ToString("F2")</p>
+                @if (Model.Tier == Easy_Games_Software.Models.UserTier.Silver && Model.Points < 100)
+                {
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: @(Model.Points)%">
+                            @Model.Points / 100
+                        </div>
+                    </div>
+                    <small class="text-muted">@(100 - Model.Points) points to Gold tier</small>
+                }
+                else if (Model.Tier == Easy_Games_Software.Models.UserTier.Gold)
+                {
+                    <p class="text-success"><i class="bi bi-check-circle"></i> You enjoy 10% off all purchases!</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5>Account Information</h5>
+                <dl class="row">
+                    <dt class="col-sm-4">Username:</dt>
+                    <dd class="col-sm-8">@Model.Username</dd>
+
+                    <dt class="col-sm-4">Email:</dt>
+                    <dd class="col-sm-8">@(Model.Email ?? "Not provided")</dd>
+
+                    <dt class="col-sm-4">Full Name:</dt>
+                    <dd class="col-sm-8">@(Model.FullName ?? "Not provided")</dd>
+
+                    <dt class="col-sm-4">Role:</dt>
+                    <dd class="col-sm-8">@Model.Role</dd>
+
+                    <dt class="col-sm-4">Member Since:</dt>
+                    <dd class="col-sm-8">@Model.RegistrationDate.ToString("MMM dd, yyyy")</dd>
+
+                    @if (Model.LastLoginDate.HasValue)
+                    {
+                        <dt class="col-sm-4">Last Login:</dt>
+                        <dd class="col-sm-8">@Model.LastLoginDate.Value.ToString("MMM dd, yyyy HH:mm")</dd>
+                    }
+                </dl>
+
+                <hr />
+
+                <div class="btn-group" role="group">
+                    <a asp-action="Edit" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Edit Profile
+                    </a>
+                    <a asp-action="ChangePassword" class="btn btn-outline-secondary">
+                        <i class="bi bi-key"></i> Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Recent Transactions</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Transactions.Any())
+                {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Amount</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var trans in Model.Transactions.OrderByDescending(t => t.TransactionDate).Take(5))
+                            {
+                                <tr>
+                                    <td>@trans.TransactionDate.ToString("MM/dd/yyyy")</td>
+                                    <td>@trans.StockItem.Name</td>
+                                    <td>$@trans.TotalAmount.ToString("F2")</td>
+                                    <td>+@trans.PointsEarned</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">No transactions yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
