@@ -1,0 +1,125 @@
+﻿@model List<Easy_Games_Software.Models.ShopStock>
+@{
+    ViewData["Title"] = "Shop Inventory";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-boxes"></i> Shop Inventory</h1>
+        <p class="lead mb-0">@ViewData["ShopName"]</p>
+    </div>
+    <div>
+        <a asp-action="AvailableStock" class="btn btn-primary">
+            <i class="bi bi-box-arrow-down"></i> Transfer More Stock
+        </a>
+        <a asp-action="Dashboard" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        No inventory in your shop yet.
+        <a asp-action="AvailableStock" class="alert-link">Transfer stock</a> from the main inventory.
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total Value</th>
+                            <th>Last Restocked</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.QuantityInShop == 0 ? "table-danger" : item.IsLowStock() ? "table-warning" : "")">
+                                <td>
+                                    <strong>@item.StockItem.Name</strong><br />
+                                    <small class="text-muted">@item.StockItem.Description</small>
+                                </td>
+                                <td><span class="badge bg-secondary">@item.StockItem.Category</span></td>
+                                <td>$@item.Price.ToString("F2")</td>
+                                <td>
+                                    @if (item.QuantityInShop == 0)
+                                    {
+                                        <span class="text-danger fw-bold">@item.QuantityInShop</span>
+                                        <i class="bi bi-exclamation-triangle text-danger"></i>
+                                    }
+                                    else if (item.IsLowStock())
+                                    {
+                                        <span class="text-warning fw-bold">@item.QuantityInShop</span>
+                                        <i class="bi bi-exclamation-circle text-warning"></i>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success fw-bold">@item.QuantityInShop</span>
+                                    }
+                                </td>
+                                <td class="fw-bold">$@item.TotalValue.ToString("F2")</td>
+                                <td>
+                                    @if (item.LastRestocked.HasValue)
+                                    {
+                                        <small>@item.LastRestocked.Value.ToString("MMM dd, yyyy")</small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">Never</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.QuantityInShop == 0)
+                                    {
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                    }
+                                    else if (item.IsLowStock())
+                                    {
+                                        <span class="badge bg-warning text-dark">Low Stock</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">In Stock</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <hr />
+
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h4 class="text-primary">@Model.Count</h4>
+                    <p class="mb-0">Total Products</p>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="text-success">@Model.Sum(s => s.QuantityInShop)</h4>
+                    <p class="mb-0">Total Units</p>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="text-info">$@Model.Sum(s => s.TotalValue).ToString("F2")</h4>
+                    <p class="mb-0">Total Value</p>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="text-warning">@Model.Count(s => s.IsLowStock() || s.QuantityInShop == 0)</h4>
+                    <p class="mb-0">Need Restocking</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}

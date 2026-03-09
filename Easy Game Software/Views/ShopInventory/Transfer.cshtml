@@ -1,0 +1,99 @@
+﻿@model Easy_Games_Software.Controllers.ShopStockTransferViewModel
+@{
+    ViewData["Title"] = "Transfer Stock";
+}
+
+<h1><i class="bi bi-arrow-right-circle"></i> Transfer Stock to Shop</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Transfer: @Model.StockItemName</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Transfer" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="ShopId" />
+                    <input type="hidden" asp-for="StockItemId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Shop:</label>
+                        <input type="text" class="form-control" value="@Model.ShopName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Product:</label>
+                        <input type="text" class="form-control" value="@Model.StockItemName" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Price per Unit:</label>
+                        <input type="text" class="form-control" value="$@Model.Price.ToString("F2")" readonly />
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Available in Owner Inventory:</label>
+                            <input type="text" class="form-control" value="@Model.AvailableQuantity units" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Current Quantity in Shop:</label>
+                            <input type="text" class="form-control" value="@Model.CurrentShopQuantity units" readonly />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="QuantityToTransfer" class="form-label"></label>
+                        <input asp-for="QuantityToTransfer" type="number" class="form-control" min="1" max="@Model.AvailableQuantity" />
+                        <span asp-validation-for="QuantityToTransfer" class="text-danger"></span>
+                        <small class="form-text text-muted">Maximum: @Model.AvailableQuantity units</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Optional notes"></textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> This will deduct the quantity from the owner's main inventory
+                        and add it to your shop's inventory.
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Confirm Transfer
+                        </button>
+                        <a asp-action="AvailableStock" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> Transfer Info</h5>
+                <p class="small">
+                    When you transfer stock:
+                </p>
+                <ul class="small">
+                    <li>The quantity is removed from the owner's main inventory</li>
+                    <li>The quantity is added to your shop's inventory</li>
+                    <li>The inventories are completely separate</li>
+                    <li>You can only transfer what's available in the owner's inventory</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
